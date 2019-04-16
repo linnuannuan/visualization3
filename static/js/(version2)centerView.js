@@ -1,4 +1,9 @@
-function centerView(node_list) {
+function version2CenterView(node_list) {
+
+
+
+
+
     var width = '100%',
         height = 500,
         shiftKey, ctrlKey;
@@ -245,4 +250,4 @@ function centerView(node_list) {
             .attr("fill","#fff")
     })
 }
-centerView()
+version2CenterView()

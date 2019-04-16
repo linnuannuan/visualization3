@@ -8,6 +8,8 @@ from neo4j.v1 import GraphDatabase, basic_auth
 
 from pypinyin import pinyin, lazy_pinyin, Style
 
+import random
+
 app = Flask(__name__)
 
 #Neo4j数据驱动 通过驱动查询节点，
@@ -34,7 +36,82 @@ def close_db(error):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('new_index.html')
+
+
+@app.route('/graph_data')
+def data():
+    db = get_db()
+    company_results = db.run("MATCH (n:Company) return n ORDER BY n.group_id")
+    person_results = db.run("MATCH (n:Person) return n ORDER BY n.group_id")
+    transaction_result = db.run("MATCH (a:Company) - [r:TRANSACTION] -> (b:Company) return a.vertex_id,r,b.vertex_id ORDER BY r.group_id ")
+    investment_result = db.run("MATCH (a) - [r:INVESTMENT] -> (b) return a.vertex_id,r,b.vertex_id ORDER BY r.group_id")
+    control_result = db.run("MATCH (a) - [r:CONTROL] -> (b) return a.vertex_id,r,b.vertex_id ORDER BY r.group_id")
+    family_result = db.run("MATCH (a) - [r:FAMILY] -> (b) return a.vertex_id,r,b.vertex_id ORDER BY r.group_id")
+    ret = {
+        "company": [],
+        "person": [],
+        "investment": [],
+        "family": [],
+        "control": [],
+        "transaction": []
+    }
+    for row in company_results:
+        # for i in range(1, 10):
+            ret['company'].append({
+                "name": row['n']['name'],
+                "vertex_id": row['n']['vertex_id'],
+                "electronic_archive_number": row['n']["electronic_archive_number"],
+                "enterprise_id":row['n']['enterprise_id'],
+                "industry": row['n']["industry"],
+                "group_id": row['n']['group_id']
+            })
+    for row in person_results:
+        # for i in range(1, 10):
+            ret['person'].append({
+                "name": row['n']['name'],
+                "vertex_id": row['n']['vertex_id'],
+                "person_id": row['n']['id'],
+                "group_id": row['n']['group_id']
+            })
+
+    for row in investment_result:
+        ret['investment'].append({
+            "src_node": row['a.vertex_id'],
+            "dst_node": row['b.vertex_id'],
+            "proportion": row['r']['proportion'],
+            "group_id": row['r']['group_id']
+        })
+    for row in transaction_result:
+        ret['transaction'].append({
+            "src_node": row['a.vertex_id'],
+            "dst_node": row['b.vertex_id'],
+            "transaction_amount": row['r']['transaction_amount' ],
+            "transaction_number": row['r']['transaction_number'],
+            "group_id": row['r']['group_id']
+        })
+    for row in control_result:
+        ret['control'].append({
+            "src_node": row['a.vertex_id'],
+            "dst_node": row['b.vertex_id'],
+            "group_id": row['r']['group_id']
+        })
+    for row in family_result:
+        ret['family'].append({
+            "src_node": row['a.vertex_id'],
+            "dst_node": row['b.vertex_id'],
+            "group_id": row['r']['group_id']
+        })
+    # 解析query的返回值
+    # index = query.find('return')
+    #
+    # variables = query[query.find('return') + 7:].split(",")
+    #
+    # ret = {
+    #     'rs': []
+    # }
+    return jsonify(ret)
+
 
 
 @app.route('/search', methods=['GET', 'POST'])
@@ -45,7 +122,7 @@ def search():
     ret = {
         'success': True,
         'sid': sid,
-        'data': [1,2,3],
+        'data': [1, 2, 3],
         'kks': {
             'tp': 1,
             'name': 'Just a Title'
@@ -57,6 +134,71 @@ def search():
 def lala():
     return render_template("test.html", result="dfiadakd")
 
+@app.route('/getRelatedGroups', methods=['GET', 'POST'])
+def getRelatedGroups():
+    group_id = request.args.get('group_id')
+    # print(group_id)
+    # 返回以group_id 为键的vertex集合
+    results = {}
+    db = get_db()
+    query = "MATCH (a:Company)-[r:TRANSACTION]->(b:Company) where a.group_id <> b.group_id  and a.group_id = " + str(group_id) +" return b.group_id"
+    # print(query)
+    related_group_ids = db.run(query)
+    # print(related_group_ids)
+    # 把原始组也放进去
+    group_list = [{
+           "b.group_id": str(group_id),
+           "type": 'main'
+        }]
+    for row in related_group_ids:
+        group_list.append({
+           "b.group_id": str(row['b.group_id']),
+           "type": 'second'
+        })
+
+    for row in group_list:
+        # print("row['b.group_id']---->", row['b.group_id'])
+        results[row['b.group_id']] = {
+            'vertex_list': {},
+            'relation_list': []
+        }
+        # query_group_nodes = "MATCH (a) where a.group_id = "+str(row['b.group_id']) + " RETURN a.vertex_id"
+        query_group_nodes = "MATCH (a) where a.group_id = "+str(row['b.group_id']) + " RETURN a, a.vertex_id"
+        # query_group_edges = "MATCH (a)-[r]->(b) where a.group_id = " + str(row['b.group_id']) + " and b.group_id =" + str(row['b.group_id']) + " RETURN a.vertex_id,r,b.vertex_id"
+        query_group_edges = "MATCH (a)-[r]->(b) where a.group_id = " + str(row['b.group_id']) + " RETURN a.vertex_id,r,b.vertex_id"
+
+        # print(query_group_nodes)
+        # print(query_group_edges)
+
+
+        # 此处应当获取不同组之间的交易边
+
+        nodes_list = db.run(query_group_nodes)
+        edges_list = db.run(query_group_edges)
+        results[row['b.group_id']]["type"] = row['type']
+        for node in nodes_list:
+            # print(node['a'].labels)
+            # print('Person' in node['a'].labels)
+            # print('Company' in node['a'].labels)
+            if 'Person' in node['a'].labels:
+                type = 'Person'
+            else:
+                type = 'Company'
+            results[row['b.group_id']]['vertex_list'][node['a.vertex_id']] = {
+                'type': type,
+                'capital': random.random()*100
+            }
+        for edges in edges_list:
+            # print("------》", edges['r'])
+            results[row['b.group_id']]['relation_list'].append({
+                'src_node': edges['a.vertex_id'],
+                'dst_node': edges['b.vertex_id'],
+                'type': edges['r'].type,
+                'importance': random.random()
+            })
+    # print(results)
+    return jsonify(results)
+    # return render_template("test.html", result="dfiadakd")
 
 @app.route('/query')
 def query():
@@ -106,10 +248,12 @@ def query():
                 if 'Person' in row[variable].labels:
                     result[variable]['type'] = 'Person'
                     result[variable]['vertex_id'] = row[variable]['vertex_id']
+                    result[variable]['group_id'] = row[variable]['group_id']
                     result[variable]['name'] = row[variable]['name']
                 if 'Company' in row[variable].labels:
                     result[variable]['type'] = 'Company'
                     result[variable]['vertex_id'] = row[variable]['vertex_id']
+                    result[variable]['group_id'] = row[variable]['group_id']
                     result[variable]['name'] = row[variable]['name']
                     result[variable]['electronic_archive_number'] = row[variable].get('electronic_archive_number')
 

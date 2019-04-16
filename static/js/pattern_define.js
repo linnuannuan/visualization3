@@ -16,6 +16,12 @@ var cfg = {
         "investment": "#AFE4C1",
         "transaction": "black"
     },
+    color_highlight: {
+        "family": "#ff0000",
+        "control": "#ffff00",
+        "investment": "#00ff00",
+        "transaction": "black"
+    },
     num_modes: 4,
     modes: {
         ADD_PERSON_MODE: 0,
@@ -26,7 +32,7 @@ var cfg = {
         ADD_KINSHIP_EDGE_MODE: 5,
         DEBUG_MODE: 6,
         DELETE_MODE: 7
-    }
+    },
 };
 
 
@@ -153,7 +159,6 @@ function delete_path(edge_id) {
 
 }
 
-
 function on_click_node(obj) {
     if (cur_mode !== cfg.modes.DELETE_MODE) {
         // add
@@ -204,7 +209,7 @@ function add_person() {
     var e = event || window.event
     var name = 'node-' + Math.round(Math.random().toFixed(4)*10000);
     // windows坐标
-    // console.log("client x:",e.clientX,"client y:",e.)
+    // console.log("client x:",e.clientX,"client y:",e.clientY)
     // console.log("e.clientX: ",e.clientX)
     // console.log("e.clientY: ",e.clientY)
     // console.log("e.screenX: ",e.screenX)
@@ -546,7 +551,7 @@ function generate_query() {
 
     // }
     // console.log("dst_node: ", dst_node)
-    console.log("pattern_node_list : ", pattern_node_list)
+    // console.log("pattern_node_list : ", pattern_node_list)
 
     var has_where = false
     // for (var i in dst_node) {
@@ -565,6 +570,7 @@ function generate_query() {
     for (var i in pattern_node_list) {
         for (var j = 0; j < i; j++) {
             if (pattern_node_list[i].node_id == pattern_node_list[j].node_id) {
+
                 if (!has_where) {
                     query_str += " where "
                     has_where = true
@@ -572,6 +578,8 @@ function generate_query() {
                     query_str += " and "
                 }
                 query_str += pattern_node_list[i].node_variable + ".vertex_id" + "=" + pattern_node_list[j].node_variable + ".vertex_id"
+                //当两个节点有
+                pattern_node_list[j].node_variable = null
             }
         }
     }
@@ -585,6 +593,9 @@ function generate_query() {
         query_str += relation_variable_list[i];
     }
     console.log("query_str", query_str)
+
+    //默认以该模式查询
+    query_str="MATCH (n1:Person)-[r1:CONTROL]->(n2:Company)-[r2:TRANSACTION]->(n3:Company),(n4:Person)-[r3:INVESTMENT]->(n5:Company) where n4.vertex_id=n1.vertex_id and n5.vertex_id=n3.vertex_id return n1,n2,n3,n4,n5,r1,r2,r3"
     $.getJSON('/query?cypher='+query_str).then(function (response) {
         // response = {"rs":[{"n1":},{}]}
         render_pattern_list(response)

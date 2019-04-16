@@ -1,4 +1,4 @@
-  @font-face {
+        @font-face {
           font-family: 'iconfont';  /* project id 988730 */
           src: url('//at.alicdn.com/t/font_988730_wvws94m5jf.eot');
           src: url('//at.alicdn.com/t/font_988730_wvws94m5jf.eot?#iefix') format('embedded-opentype'),
@@ -17,7 +17,7 @@
        #dks {
             width: 25%;
             height: 300px;
-        }
+       }
 
         .edge {
             stroke-width: 3;

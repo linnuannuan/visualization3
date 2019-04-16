@@ -90,7 +90,7 @@ function renderNav(node_list) {
                 //清空中央画布，更新中央画布内容
                 d3.select("#center_view > *").remove()
                 current_view = {max_x:(e.offsetX+6)*zoomrate,max_y:200,min_x:(e.offsetX-94)*zoomrate,min_y:0}
-                centerView(node_list)
+                version2CenterView(node_list)
             })
         var rect2 = svg_graph.append('svg:rect')
             .attr('width', '100px')
