@@ -1,0 +1,6 @@
+#filter_1,#filter_2,#filter_3,#filter_4{
+    display: block;
+    float: left;
+    width: 50%;
+    height: 50%;
+}
