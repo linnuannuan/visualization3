@@ -1,440 +1,278 @@
-console.log('inited this page');
+width = 500;
+height = 500;
+renderItem ='overview'
 
+drag = simulation => {
+   function dragstarted(d) {
+        if (!d3_event_active) simulation_alphaTarget(0_3)_restart();
+        d_fx = d_x;
+        d_fy = d_y;
+   }
 
+  function dragged(d) {
+        d_fx = d3_event_x;
+        d_fy = d3_event_y;
+  }
 
-/*定义全局变量*/
-overview_location = {}
+  function dragended(d) {
+    if (!d3_event_active) simulation_alphaTarget(0);
+    d_fx = null;
+    d_fy = null;
+  }
 
-
-
-
-function overview() {
-    //中央视图接收到不为空的node_list，对应的group_id的组组的宽度变大，符合模式的节点和边变红
-    //输出一个所有节点和关系在全局的位置，起始角度
-    // overview_location={"a":1}
-    d3.json("/graph_data", function (error, graph) {
-        var w = 500;
-        var h = 500;
-
-        // graph = graph.
-        //创建弧生成器
-        var company_outerRadius = w / 3;
-        var company_innerRadius = w / 3.1
-
-        var person_outerRadius = w / 2.4;
-        var person_innerRadius = w / 2.45;
-
-        var company_arc = d3.svg.arc()
-            .innerRadius(company_innerRadius)
-            .outerRadius(company_outerRadius)
-            .startAngle(function (d) {
-                // console.log(d)
-                return d.startAngle + (d.endAngle - d.startAngle) * 0.4
-
-            })
-            .endAngle(function (d) {
-                // console.log(d)
-                // if(!!node_list ){
-                //     if( d.data.group_id in group_list){
-                //         return d.endAngle *3
-                //     }
-                //     else{
-                //         return d.startAngle
-                //     }
-                // }
-                // else return d.endAngle
-                return d.endAngle
-            })
-
-        var person_arc = d3.svg.arc()
-            .innerRadius(person_innerRadius)
-            .outerRadius(person_outerRadius)
-            .startAngle(function (d) {
-                // console.log(d)
-                // if(!!node_list ){
-                //     if( d.data.group_id in group_list){
-                //         return d.startAngle + (d.endAngle - d.startAngle)*0.4
-                //     }
-                //     else{
-                //         return 0
-                //     }
-                // }
-                return d.startAngle + (d.endAngle - d.startAngle) * 0.4
-            })
-            .endAngle(function (d) {
-                // console.log(d)
-                // if(!!node_list ){
-                //     if( d.data.group_id in group_list){
-                //         return d.endAngle *3
-                //     }
-                //     else{
-                //         // return d.startAngle + (d.endAngle - d.startAngle)*0.4
-                //         return 0
-                //     }
-                // }
-                // else return d.endAngle
-                return d.endAngle
-            })
-
-        var chord = d3.svg.chord()
-            .source(function (d) {
-                return d.src_node;
-            })
-            .target(function (d, i) {
-                return d.dst_node;
-            })
-            .radius(company_innerRadius)
-            .startAngle(function (d) {
-                // console.log(d)
-                return company_location[d].startAngle - (company_location[d].endAngle - company_location[d].startAngle) * 0.9;
-            })
-            .endAngle(function (d) {
-                return company_location[d].endAngle;
-            })
-        // .cornerRadius(500)
-
-        //定义人的弦，为了将角度转换为对应的二维坐标
-        var person_chord = d3.svg.chord()
-            .source(function (d) {
-                return d.src_node;
-            })
-            .target(function (d, i) {
-                return d.src_node;
-            })
-            .radius(person_innerRadius)
-            .startAngle(function (d) {
-                // if (person_location[d].group_id > 33500 && person_location[d].group_id < 33700) {
-                //     console.log(person_location[d].group_id, ":", person_location[d].startAngle/(2*Math.PI) *360)
-                // }
-                return person_location[d].startAngle;
-            })
-            .endAngle(function (d) {
-                return person_location[d].endAngle;
-            })
-
-        var company_chord = d3.svg.chord()
-            .source(function (d) {
-                // console.log(d)
-                return d.dst_node;
-            })
-            .target(function (d, i) {
-                return d.dst_node;
-            })
-            .radius(company_outerRadius)
-            .startAngle(function (d) {
-                return company_location[d].startAngle
-            })
-            .endAngle(function (d) {
-                return company_location[d].endAngle
-            })
-
-        /*定义一个pie,用layout包裹数据，设value访问器，决定包裹dataset的什么数据*/
-        var pie = d3.layout.pie()
-            .startAngle(Math.PI * 0)
-            .endAngle(Math.PI * 2)
-            .value(
-                function (d) {
-                    // if(!!node_list){
-                    //     //若node_list不为空
-                    //     if(d['group_id'] in group_list){
-                    //         // console.log(d['group_id'])
-                    //         return 20
-                    //     }
-                    //     else{
-                    //         return 10
-                    //     }
-                    // }
-                    return d['group_id']
-                }
-            )  //value访问器决定我们要访问数据集中的什么数据，同时在pie（dataset)也会有
-        var color = d3.scale.category20();
-
-        var zoom = d3.behavior.zoom()
-            .scaleExtent([1, 10])
-            .on("zoom", function (d) {
-                d3.select(this).attr("transform", "translate(" + d3.event.translate + ")" +
-                    "scale(" + d3.event.scale + ")"
-                )
-            })
-
-        var small_control_arrow_path = "M4,4 L8 ,6 L4,8 L6,6 L4,4";
-        var small_investment_arrow_path = "M4,4 L8,6 L4,8 L6,6 L4,4";
-        var small_transaction_arrow_path = "M4,4 L8,6 L4,8 L6,6 L4,4";
-
-
-        var svg = d3.select("#overview").append("svg")
-            .attr("width", w)
-            .attr("height", h)
-            .call(zoom)
-
-
-        /*开始对每个扇形（startAngle,endAngle,value）进行绑定,放在透明g元素中*/
-        var person_svg = svg.append("g").attr("class", "person")
-        var company_svg = svg.append("g").attr("class", "company")
-        var transaction_svg = svg.append("g").attr("class", "transaction")
-        var control_svg = svg.append("g").attr("class", "control")
-        var family_svg = svg.append("g").attr("class", "family")
-        var investment_svg = svg.append("g").attr("class", "investment")
-
-        var tooltip = svg
-            .append("g")
-            .append("text")
-            .attr("class", "tooltip")
-        console.log("pie-person", pie(graph.person))
-        console.log("pie-company", pie(graph.company))
-
-        var person_arcs = person_svg.selectAll("g.arc")
-            .data(pie(graph.person))
-            .enter()
-            .append("g")
-            .attr("transform", "translate(" + w / 2 + "," + w / 2 + ")")//放到svg中心
-            .attr("class", "person")
-            .on("mouseover", function (d) {
-                tooltip
-                    .attr("left", d3.event.pageX + "px")
-                    .attr("top", d3.event.pageY + "px")
-                    .attr("opacity", 1)
-                    .text(d.data['name'])
-
-                tooltip.style("box-shadow", "10px 0px 0px" + color(i))//添加尾部阴影
-                // console.log()
-                // console.log(d3.event.pageX)
-                // console.log(d3.event.pageY)
-            })
-            .on("mousemove", function (d) {
-                tooltip.style("left", d3.event.pageX + "px")
-                    .style("top", d3.event.pageY + "px")
-                    .text(d.data['name'])
-            })
-            .on("mouseout", function (d) {
-                // tooltip.style("opacity", 0);
-            })
-
-        var company_arcs = company_svg.selectAll("g.arc")
-            .data(pie(graph.company))
-            .enter()
-            .append("g")
-            .attr("transform", "translate(" + w / 2 + "," + w / 2 + ")")//放到svg中心
-
-
-        var transaction_arcs = transaction_svg.selectAll("g.arc")
-            .data(graph.transaction)
-            .enter()
-            .append("g")
-            .attr("transform", "translate(" + w / 2 + "," + w / 2 + ")")//放到svg中心
-
-
-        var investment_arcs = investment_svg.selectAll("g.arc")
-            .data(graph.investment)
-            .enter()
-            .append("g")
-            .attr("transform", "translate(" + w / 2 + "," + w / 2 + ")")//放到svg中心
-
-        var control_arcs = control_svg.selectAll("g.arc")
-            .data(graph.control)
-            .enter()
-            .append("g")
-            .attr("transform", "translate(" + w / 2 + "," + w / 2 + ")")//放到svg中心
-
-
-        var defs = d3.selectAll("svg").append("defs")
-
-        var investment_arrowMarker = defs.append("marker")
-            .attr("id", "small_investment_arrow")
-            .attr("markerUnits", "strokeWidth")
-            .attr("markerWidth", "12")
-            .attr("markerHeight", "12")
-            .attr("viewBox", "0 0 12 12")
-            .attr("refX", "6")
-            .attr("refY", "6")
-            .attr("orient", "auto")
-
-        var control_arrowMarker = defs.append("marker")
-            .attr("id", "small_control_arrow")
-            .attr("markerUnits", "strokeWidth")
-            .attr("markerWidth", "12")
-            .attr("markerHeight", "12")
-            .attr("viewBox", "0 0 12 12")
-            .attr("refX", "6")
-            .attr("refY", "6")
-            .attr("orient", "auto")
-
-        var transaction_arrowMarker = defs.append("marker")
-            .attr("id", "small_transaction_arrow")
-            .attr("markerUnits", "strokeWidth")
-            .attr("markerWidth", "12")
-            .attr("markerHeight", "12")
-            .attr("viewBox", "0 0 12 12")
-            .attr("refX", "6")
-            .attr("refY", "6")
-            .attr("orient", "auto")
-
-        control_arrowMarker.append("path")
-            .attr("d", small_control_arrow_path)
-            .attr("fill", cfg.color_link["control"])
-            .attr("stroke-width", "1px")
-            .attr('stroke', cfg.color_link["control"])
-
-        investment_arrowMarker.append("path")
-            .attr("d", small_investment_arrow_path)
-            .attr("fill", cfg.color_link["investment"])
-            .attr("stroke-width", "0px")
-            .attr("stroke", cfg.color_link["investment"]);
-
-        transaction_arrowMarker.append("path")
-            .attr("d", small_control_arrow_path)
-            .attr("fill", cfg.color_link["transaction"])
-            .attr("stroke-width", "1px")
-            .attr('stroke', cfg.color_link["transaction"])
-            .attr("transform", "translate(" + w / 2 + "," + w / 2 + ")")
-
-        // 创建一个索引可以直接通过vertex_id 访问company的弧度
-        var company_location = {}
-        for (var i in pie(graph.company)) {
-            // console.log(pie(graph.company)[i].data.vertex_id)
-            company_location[pie(graph.company)[i].data.vertex_id] = graph.company[i]
-            company_location[pie(graph.company)[i].data.vertex_id].startAngle = pie(graph.company)[i].startAngle + (pie(graph.company)[i].endAngle - pie(graph.company)[i].startAngle) * 0.7
-            company_location[pie(graph.company)[i].data.vertex_id].endAngle = pie(graph.company)[i].endAngle
-            company_location[pie(graph.company)[i].data.vertex_id].padAngle = pie(graph.company)[i].padAngle
-            // company_location[pie(graph.company)[i]['value']] = graph.company[i]
-            // company_location[pie(graph.company)[i]['value']].startAngle = pie(graph.company)[i].startAngle
-            // company_location[pie(graph.company)[i]['value']].endAngle = pie(graph.company)[i].endAngle
-            // company_location[pie(graph.company)[i]['value']].padAngle = pie(graph.company)[i].padAngle
-        }
-        // console.log("company location",company_location)
-
-        var person_location = {}
-        for (var i in pie(graph.person)) {
-            person_location[pie(graph.person)[i].data.vertex_id] = graph.person[i]
-            person_location[pie(graph.person)[i].data.vertex_id].startAngle = pie(graph.person)[i].startAngle + (pie(graph.person)[i].endAngle - pie(graph.person)[i].startAngle) * 0.7
-            person_location[pie(graph.person)[i].data.vertex_id].endAngle = pie(graph.person)[i].endAngle
-            person_location[pie(graph.person)[i].data.vertex_id].padAngle = pie(graph.person)[i].padAngle
-            // person_location[pie(graph.person)[i]['value']] = graph.person[i]
-            // person_location[pie(graph.person)[i]['value']].startAngle = pie(graph.person)[i].startAngle
-            // person_location[pie(graph.person)[i]['value']].endAngle = pie(graph.person)[i].endAngle
-            // person_location[pie(graph.person)[i]['value']].padAngle = pie(graph.person)[i].padAngle
-        }
-        // console.log(person_location)
-
-        /*为每个g以弧参数生成路径*/
-        /*d当用布局的时候，就不需要再用路径生成器包裹数据了*/
-        person_arcs.append("path")
-            .attr("fill", function (d, i) {
-                return 'pink';
-            })
-            .attr("d", function (d) {
-                // arc.outerRadius(d.value);
-                // console.log(person_arc(d))
-                return person_arc(d);
-            })
-            .attr("id", function (d) {
-                return "person-" + d['data'].vertex_id
-            })
-
-
-        company_arcs.append("path")
-            .attr("fill", function (d, i) {
-                return 'lightblue';
-            })
-            .attr("d", function (d) {
-                // arc.outerRadius(d.value);
-                return company_arc(d);
-            })
-            .attr("id", function (d) {
-                return "company-" + d['data'].vertex_id
-            })
-
-
-        transaction_arcs.append("path")
-            .attr("d", function (d, i) {
-                return chord(d)
-            })
-            .attr("fill", function (d, i) {
-                return '#B0E0E6'
-            })
-            .attr("stroke-width", "2")
-            .attr("stroke", function (d) {
-                // return cfg.color_link['transaction'];
-                return '#B0E0E6'
-            })
-            .attr("marker-end", function (d) {
-                return "url(#small_transaction_arrow)";
-            })
-            .attr("id", function (d) {
-                return "transaction-" + d.src_node + "-" + d.dst_node;
-            })
-
-
-        investment_arcs.append("path")
-            .attr("d", function (d, i) {
-                // console.log("investment arcs",d)
-                var start = person_chord(d).split(",")[0].slice(1,) + "," + person_chord(d).split(",")[1].split("A")[0]
-                var end = company_chord(d).split(",")[0].slice(1,) + "," + company_chord(d).split(",")[1].split("A")[0]
-                end = calculate(start.split(',')[0], start.split(',')[1], end.split(',')[0], end.split(',')[1], 2).x
-                    + "," + calculate(start.split(',')[0], start.split(',')[1], end.split(',')[0], end.split(',')[1], 2).y
-                // console.log(person_chord(d))
-                // console.log(company_chord(d))
-                // console.log("M"+start+" L"+end)
-                return "M" + start + " L" + end
-            })
-            .attr("fill", function (d, i) {
-                return cfg.color_link['investment']
-            })
-            .attr("stroke-width", "2")
-            .attr("stroke", function (d) {
-                return cfg.color_link['investment'];
-            })
-            .attr("marker-end", function (d) {
-                return "url(#small_investment_arrow)";
-            })
-            .attr("id", function (d) {
-                return "investment-" + d.src_node + "-" + d.dst_node;
-            })
-
-        control_arcs.append("path")
-            .attr("d", function (d, i) {
-                // console.log("investment arcs",d)
-                var start = person_chord(d).split(",")[0].slice(1,) + "," + person_chord(d).split(",")[1].split("A")[0]
-                var end = company_chord(d).split(",")[0].slice(1,) + "," + company_chord(d).split(",")[1].split("A")[0]
-                end = calculate(start.split(',')[0], start.split(',')[1], end.split(',')[0], end.split(',')[1], 2).x
-                    + "," + calculate(start.split(',')[0], start.split(',')[1], end.split(',')[0], end.split(',')[1], 2).y
-                return "M" + start + " L" + end
-            })
-            .attr("fill", function (d, i) {
-                return cfg.color_link['control']
-            })
-            .attr("stroke-width", "2")
-            .attr("stroke", function (d) {
-                return cfg.color_link['control'];
-            })
-            .attr("marker-end", function (d) {
-                return "url(#small_investment_arrow)";
-            })
-            .attr("id", function (d) {
-                return "control-" + d.src_node + "-" + d.dst_node;
-            })
-
-        // family_arcs.append("path");
-
-
-        // person_arcs.append("text")
-        //     .attr("transform", function (d) {
-        //         let x = person_arc.centroid(d)[0] * 1.4;//文字的x坐标
-        //         let y = person_arc.centroid(d)[1] * 1.4;
-        //         return "translate(" + x + "," + y + ")";
-        //     })
-        //     .attr("text-anchor", "middle")
-        //     .text(function (d) {
-        //         return d.value;
-        //     })
-
-        /*添加div提示框*/
-        overview_location = {
-            "company_location": company_location,
-            "person_location": person_location,
-        }
-    })
+  return d3_drag()
+      _on("start", dragstarted)
+      _on("drag", dragged)
+      _on("end", dragended);
 }
 
-// overview_position = overview()
-overview()
+const scale = d3_scaleOrdinal(d3_schemeCategory10);
+
+function color(d) {
+    return scale(d_group);
+}
+function clearSvg() {
+    d3_select("#"+renderItem)_selectAll('svg')_remove()
+}
+function getMaxMinData(data, attr, mode) {
+    console_log(data,attr,mode)
+    var data_list = []
+    for (var i in data){
+        // console_log(data[i])
+        data_list_push(data[i][attr])
+    }
+
+    if (mode == 'max'){
+        console_log('get ',mode,'value of ',attr,'of data: ',data,'as ',Math_max_apply(null,data_list))
+        return Math_max_apply(null,data_list);
+    }
+    else if(mode == 'min'){
+        console_log('get ',mode,'value of ',attr,'of data: ',data,'as ',Math_min_apply(null,data_list))
+        return Math_min_apply(null,data_list)
+    }
+    else{
+        console_log('invalid mode')
+        return null
+    }
+}
+
+data_by_group = {}
+datasource = '/testData'
+// function filterByGroup(data) {
+//
+//     newData = {}
+//
+//     newData2 = {
+//         'nodes':[],
+//         'links':[]
+//     }
+//
+//     newData['nodes'] = data['nodes']_map(
+//         function(num) {
+//             if(num['group']== group_id) {
+//                 return num
+//             }
+//             else {
+//                 return false
+//             }
+//         })_filter(
+//         function (value) {
+//             return !!value
+//         }
+//     )
+//
+//     node_list = data['nodes']_map(
+//         function(num) {
+//             if(num['group'] == group_id) {
+//                 return num['id']
+//             }
+//             else {
+//                 return false
+//             }
+//         })_filter(
+//             function (value) {
+//                 return !!value
+//             }
+//         )
+//
+//     newData['links'] = data['links']_map(
+//         function(link) {
+//             if(link['source'] in ) {
+//                 return link
+//             }
+//             else {
+//                 return false
+//             }
+//         })_filter(
+//         function (value) {
+//             return !!value
+//         })
+//
+//     return 0
+// }
+
+
+function hideGroup(group_id) {
+    //隐藏节点 remove
+
+}
+
+function showGroup(group_id) {
+    //展示节点
+    clearSvg()
+    getOverview(datasource, group_id)
+}
+
+// Toggle children on click_
+function click(d) {
+    if(d_statu == 'show'){
+        hideGroup(d['group_id'])
+    }
+    else{
+        showGroup(d['group_id'])
+    }
+
+    // if (!d3_event_defaultPrevented) {
+    //     if (d_children) {
+    //       d__children = d_children;
+    //       d_children = null;
+    //     } else {
+    //       d_children = d__children;
+    //       d__children = null;}
+    // }
+}
+
+function getOverview(datasource, group_id = null, filter1= null, filter2= null){
+
+    $_getJSON(datasource, {
+        group_id: group_id,
+        filter1: filter1,
+        filter2: filter2,
+    } , data => {
+
+        links = data_links
+        nodes = data_nodes
+
+        // console_log('load data: ',data, ' links: ',links,' nodes: ',nodes)
+
+        // 映射器
+        // 线条透明度与value映射关系
+        var opacityScale = d3_scaleLinear()
+                                  _domain([getMaxMinData(links,'value','min'),getMaxMinData(links,'value','max')])
+                                  _range([0_5,1]);
+
+        const simulation = d3_forceSimulation(nodes)
+              _force("link", d3_forceLink(links)_id(d => d_id))
+              _force("charge", d3_forceManyBody())
+              _force("x", d3_forceX())
+              _force("y", d3_forceY());
+
+
+        svg = d3_select("#"+renderItem)_append('svg')
+              _attr("viewBox", [-width / 2, -height / 2, width, height]);
+
+
+          const link = svg_append("g")
+              _attr("stroke", "#999")
+              // _attr("stroke-opacity", 0_6)
+              _attr("stroke-opacity", function (d) {
+                  console_log('origin d:',d,'opacity:',opacityScale(d))
+                  return opacityScale(d)
+              })
+            _selectAll("line")
+            _data(links)
+            _join("line")
+              _attr('id',d =>{
+
+              })
+              _attr("stroke-width", d => Math_sqrt(d_value))
+              _attr("stroke-opacity", d=> {
+                  console_log('origin d:',d_value,'opacity:',opacityScale(d_value))
+                  return opacityScale(d_value)
+              });
+
+          const node = svg_append("g")
+              _attr("stroke", "#fff")
+              _attr("stroke-width", 1_5)
+            _selectAll("circle")
+            _data(nodes)
+            _join("circle")
+              _attr("r", 5)
+              _attr("fill", d=> {
+                  console_log(d)
+                  return color(d)
+              })
+              _call(drag(simulation))
+              _on("click", d => {
+                  group_id = d['group']
+                  console_log('click group_id:',group_id)
+                  let newNodes = nodes_map(function (node) {
+                      console_log('not the id',node)
+                      if(node['id'] != d['id'] && node['group'] == group_id){
+                          d3_select("#node-"+node['id'])
+                              _remove()
+                          return node['id']
+
+                      }
+                      else {
+                          return false
+                      }
+                  })_filter((
+                    function (value) {
+                        return !!value
+                    }))
+
+                  console_log('new Node:',newNodes)
+                  simulation_nodes(newNodes)_restart()
+              })
+              _attr('id',d=>{
+                  //只显示最大的资产的节点
+                  // if(d['asset']==getMaxMinData(nodes,'asset','max')){
+                  //     return 'node-m-'+d['id']
+                  // }
+                  return 'node-'+d['id']
+              })
+              _attr('class', d=>{
+                  return d['group']
+              })
+              _attr('statu', 'show')
+
+          node_append("title")
+              _text(d => d_id);
+
+          simulation_on("tick", () => {
+            link
+                _attr("x1", d => d_source_x)
+                _attr("y1", d => d_source_y)
+                _attr("x2", d => d_target_x)
+                _attr("y2", d => d_target_y);
+
+            node
+                _attr("cx", d => d_x)
+                _attr("cy", d => d_y);
+          });
+
+
+        })_catch(e => {
+          console_log(e)
+        })
+}
+getOverview(datasource)
+
+
+
+function filterByGroup(arg){
+    if (arg == 0){
+        clearSvg()
+        getOverview(datasource)
+    }
+    else if (arg == 1){
+        clearSvg()
+        getOverview(datasource,5)
+    }
+    else{
+        clearSvg()
+        getOverview(datasource,7)
+    }
+}
+
