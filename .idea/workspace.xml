@@ -7,6 +7,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d1856ecb-87e5-4340-929f-eef42aff5555" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/gSpan" beforeDir="false" afterPath="$PROJECT_DIR$/gSpan" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/gSpan/main.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/gSpan/main.ipynb" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -50,7 +51,7 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/gSpan/main.ipynb">
           <provider selected="true" editor-type-id="ipnb-editor">
             <state>
@@ -93,9 +94,13 @@
           <provider selected="true" editor-type-id="text-editor" />
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/gSpan/python">
-          <provider selected="true" editor-type-id="text-editor" />
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="144">
+              <caret line="6" column="4" lean-forward="true" selection-start-line="6" selection-start-column="4" selection-end-line="6" selection-end-column="4" />
+            </state>
+          </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
@@ -165,7 +170,7 @@
     </replaceStrings>
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/gSpan" />
   </component>
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
@@ -220,27 +225,6 @@
             <path>
               <item name="FraudMiner" type="b2602c69:ProjectViewProjectNode" />
               <item name="FraudMiner" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="FraudMiner" type="b2602c69:ProjectViewProjectNode" />
-              <item name="FraudMiner" type="462c0819:PsiDirectoryNode" />
-              <item name="gSpan" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="FraudMiner" type="b2602c69:ProjectViewProjectNode" />
-              <item name="FraudMiner" type="462c0819:PsiDirectoryNode" />
-              <item name="static" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="FraudMiner" type="b2602c69:ProjectViewProjectNode" />
-              <item name="FraudMiner" type="462c0819:PsiDirectoryNode" />
-              <item name="static" type="462c0819:PsiDirectoryNode" />
-              <item name="js" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="FraudMiner" type="b2602c69:ProjectViewProjectNode" />
-              <item name="FraudMiner" type="462c0819:PsiDirectoryNode" />
-              <item name="templates" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -434,12 +418,12 @@
       <workItem from="1555289531007" duration="19599000" />
       <workItem from="1574300160638" duration="412000" />
       <workItem from="1574300654096" duration="2112000" />
-      <workItem from="1574304889640" duration="201000" />
+      <workItem from="1574304889640" duration="426000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="478976000" />
+    <option name="totallyTimeSpent" value="479201000" />
   </component>
   <component name="TodoView" selected-index="1">
     <todo-panel id="selected-file">
@@ -452,11 +436,10 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="2552" y="-8" width="1936" height="1056" extended-state="6" />
-    <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.78428096" visible="true" weight="0.2081545" />
-      <window_info id="Favorites" order="1" sideWeight="0.21875" side_tool="true" weight="0.2054721" />
-      <window_info id="Structure" order="2" sideWeight="0.21571906" side_tool="true" visible="true" weight="0.2081545" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.6571906" visible="true" weight="0.2081545" />
+      <window_info id="Favorites" order="1" sideWeight="0.34280938" side_tool="true" visible="true" weight="0.2081545" />
+      <window_info id="Structure" order="2" sideWeight="0.21571906" side_tool="true" weight="0.2081545" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.19777778" />
       <window_info anchor="bottom" id="Run" order="2" weight="0.31666666" />
@@ -936,9 +919,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/gSpan/python">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
     <entry file="file://$PROJECT_DIR$/gSpan/main1.ipynb">
       <provider selected="true" editor-type-id="ipnb-editor">
         <state>
@@ -957,6 +937,13 @@
       <provider selected="true" editor-type-id="ipnb-editor">
         <state>
           <selected id="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gSpan/python">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="144">
+          <caret line="6" column="4" lean-forward="true" selection-start-line="6" selection-start-column="4" selection-end-line="6" selection-end-column="4" />
         </state>
       </provider>
     </entry>
